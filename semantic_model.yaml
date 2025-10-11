@@ -221,6 +221,14 @@ tables:
     primary_key:
       columns:
         - TRANSACTION_ID
+metrics:
+  - name: discount_rate
+    description: Percentage discount applied to sales
+    expr: (SUM(SALES.Discount_Applied) / SUM(SALES.Case_Quantity * 12 * SALES.Bottle_Price)) * 100
+    synonyms: []
+  - name: gross_sales
+    description: Total sales amount before any discounts applied
+    expr: SUM(SALES.Case_Quantity * 12 * SALES.Bottle_Price)
 relationships:
   - name: SALES_CUSTOMER_CUSTOMER_ID
     left_table: SALES
