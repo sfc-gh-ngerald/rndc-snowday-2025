@@ -3,6 +3,14 @@ CREATE OR REPLACE WAREHOUSE RNDC_LAB_WH WITH WAREHOUSE_SIZE='SMALL';
 USE WAREHOUSE RNDC_LAB_WH;
 ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'AWS_US';
 
+CREATE DATABASE IF NOT EXISTS snowflake_intelligence;
+GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE PUBLIC;
+
+CREATE SCHEMA IF NOT EXISTS snowflake_intelligence.agents;
+GRANT USAGE ON SCHEMA snowflake_intelligence.agents TO ROLE PUBLIC;
+
+GRANT CREATE AGENT ON SCHEMA snowflake_intelligence.agents TO ROLE ACCOUNTADMIN;
+
 -- ================================================================
 -- RNDC Snowflake Hands-On Lab - Data Setup Script
 -- Star Schema: Sales Fact Table with Customer and Product Dimensions
