@@ -1,0 +1,320 @@
+name: RNDC_SALES_ANALYST
+description: This is the analyst service for the RNDC demo data for liquor sales
+tables:
+  - name: CUSTOMER
+    base_table:
+      database: RNDC_LAB
+      schema: TARGET
+      table: CUSTOMER
+    dimensions:
+      - name: ACCOUNT_TYPE
+        description: 'Classification: On-Premise (bars/restaurants) or Off-Premise (retail stores)'
+        expr: ACCOUNT_TYPE
+        data_type: VARCHAR(20)
+        sample_values:
+          - Off-Premise
+          - On-Premise
+      - name: CITY
+        description: City where the customer business is located
+        expr: CITY
+        data_type: VARCHAR(100)
+        sample_values:
+          - Austin
+          - Dallas
+          - Houston
+      - name: CUSTOMER_ID
+        description: Unique identifier for each customer account
+        expr: CUSTOMER_ID
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '1003'
+          - '1010'
+          - '1001'
+      - name: CUSTOMER_NAME
+        description: Business name of the customer establishment
+        expr: CUSTOMER_NAME
+        data_type: VARCHAR(200)
+        sample_values:
+          - The Rusty Anchor Bar & Grill
+          - World Corner Store
+          - Downtown Steakhouse
+      - name: LICENSE_STATUS
+        description: Current status of alcohol license (Active/Suspended)
+        expr: LICENSE_STATUS
+        data_type: VARCHAR(20)
+        sample_values:
+          - Active
+          - Suspended
+      - name: SALES_TERRITORY
+        description: Sales territory or geographic region for the account
+        expr: SALES_TERRITORY
+        data_type: VARCHAR(50)
+        sample_values:
+          - Houston Metro
+          - Central Texas
+          - North Texas
+      - name: STATE
+        description: Two-letter state code
+        expr: STATE
+        data_type: VARCHAR(2)
+        sample_values:
+          - TX
+    primary_key:
+      columns:
+        - CUSTOMER_ID
+  - name: PRODUCT
+    base_table:
+      database: RNDC_LAB
+      schema: TARGET
+      table: PRODUCT
+    dimensions:
+      - name: BRAND_NAME
+        description: Brand name of the wine or spirits product
+        expr: BRAND_NAME
+        data_type: VARCHAR(100)
+        sample_values:
+          - Ketel One
+          - Tito's Handmade Vodka
+          - Absolut
+      - name: CATEGORY
+        description: 'Product category: Vodka, Whiskey, Tequila, Rum, Gin, Cabernet, Chardonnay, etc.'
+        expr: CATEGORY
+        data_type: VARCHAR(50)
+        sample_values:
+          - Pinot Noir
+          - Tequila
+          - Vodka
+      - name: PRODUCT_SKU
+        description: Unique stock keeping unit identifier for each product
+        expr: PRODUCT_SKU
+        data_type: VARCHAR(20)
+        sample_values:
+          - SKU-V-002
+          - SKU-V-001
+          - SKU-V-003
+      - name: SUPPLIER_ID
+        description: Unique identifier for the supplier or vendor
+        expr: SUPPLIER_ID
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '2015'
+          - '2002'
+          - '2003'
+    facts:
+      - name: BOTTLE_SIZE_L
+        description: Bottle size in liters (e.g., 0.75L standard, 1.0L liter)
+        expr: BOTTLE_SIZE_L
+        data_type: NUMBER(4,2)
+        access_modifier: public_access
+        sample_values:
+          - '1.00'
+          - '0.75'
+      - name: PROOF
+        description: Alcohol proof (twice the ABV percentage). Wine products use 0.
+        expr: PROOF
+        data_type: NUMBER(38,0)
+        access_modifier: public_access
+        sample_values:
+          - '90'
+          - '70'
+          - '80'
+    primary_key:
+      columns:
+        - PRODUCT_SKU
+  - name: SALES
+    base_table:
+      database: RNDC_LAB
+      schema: TARGET
+      table: SALES
+    dimensions:
+      - name: CUSTOMER_ID
+        description: Foreign key reference to the customer account
+        expr: CUSTOMER_ID
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '1016'
+          - '1006'
+          - '1003'
+      - name: PRODUCT_SKU
+        synonyms:
+          - sku
+          - uid
+          - universal id
+        description: Foreign key reference to the product sold
+        expr: PRODUCT_SKU
+        data_type: VARCHAR(20)
+        sample_values:
+          - SKU-G-003
+          - SKU-G-001
+          - SKU-G-002
+      - name: PROMOTION_ID
+        description: Promotional campaign identifier (NULL if no promotion)
+        expr: PROMOTION_ID
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '1003'
+          - '1010'
+      - name: SALES_REP_ID
+        synonyms:
+          - rep id
+        description: Unique identifier for the sales representative
+        expr: SALES_REP_ID
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '5001'
+          - '5002'
+          - '5017'
+      - name: TRANSACTION_ID
+        description: Unique identifier for each sales transaction
+        expr: TRANSACTION_ID
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '98'
+          - '29'
+          - '1'
+    time_dimensions:
+      - name: DATE
+        description: Date when the sales transaction occurred
+        expr: DATE
+        data_type: DATE
+        sample_values:
+          - '2025-09-07'
+          - '2025-01-29'
+          - '2025-08-23'
+    facts:
+      - name: BOTTLE_PRICE
+        description: Price per individual bottle before discounts
+        expr: BOTTLE_PRICE
+        data_type: NUMBER(10,2)
+        access_modifier: public_access
+        sample_values:
+          - '14.99'
+          - '38.99'
+          - '24.99'
+      - name: CASE_QUANTITY
+        description: Number of cases sold (each case contains 12 bottles)
+        expr: CASE_QUANTITY
+        data_type: NUMBER(38,0)
+        access_modifier: public_access
+        sample_values:
+          - '6'
+          - '4'
+          - '2'
+      - name: DISCOUNT_APPLIED
+        description: Dollar amount of discount (10% for >5 cases, 5% for promotions)
+        expr: DISCOUNT_APPLIED
+        data_type: NUMBER(10,2)
+        access_modifier: public_access
+        sample_values:
+          - '1889.24'
+          - '1619.35'
+          - '1834.92'
+      - name: TOTAL_SALE_AMOUNT
+        description: Total sale amount after discounts (cases × 12 × price - discount)
+        expr: TOTAL_SALE_AMOUNT
+        data_type: NUMBER(12,2)
+        access_modifier: public_access
+        sample_values:
+          - '179.93'
+          - '0.00'
+          - '725.87'
+    primary_key:
+      columns:
+        - TRANSACTION_ID
+relationships:
+  - name: SALES_CUSTOMER_CUSTOMER_ID
+    left_table: SALES
+    right_table: CUSTOMER
+    relationship_columns:
+      - left_column: CUSTOMER_ID
+        right_column: CUSTOMER_ID
+  - name: SALES_PRODUCT_PRODUCT_SKU
+    left_table: SALES
+    right_table: PRODUCT
+    relationship_columns:
+      - left_column: PRODUCT_SKU
+        right_column: PRODUCT_SKU
+verified_queries:
+  - name: What is the average bottle price for Vodka products compared to Tequila products?
+    question: What is the average bottle price for Vodka products compared to Tequila products?
+    sql: |-
+      SELECT
+        p.category,
+        ROUND(AVG(s.bottle_price), 2) AS avg_bottle_price
+      FROM
+        sales AS s
+        LEFT OUTER JOIN product AS p ON s.product_sku = p.product_sku
+      WHERE
+        p.category IN ('Vodka', 'Tequila')
+      GROUP BY
+        p.category
+      ORDER BY
+        p.category
+    use_as_onboarding_question: false
+    verified_by: Nishant Gerald
+    verified_at: 1760192764
+  - name: How many cases were sold by sales rep 5017 in 2025?
+    question: How many cases were sold by sales rep 5017 in 2025?
+    sql: |-
+      SELECT
+        SUM(case_quantity) AS total_cases_sold
+      FROM
+        sales
+      WHERE
+        sales_rep_id = 5017
+        AND DATE_PART('YEAR', date) = 2025
+    use_as_onboarding_question: false
+    verified_by: Nishant Gerald
+    verified_at: 1760192785
+  - name: Can you compare my worst rep to the best rep, in terms of sales?
+    question: Can you compare my worst rep to the best rep, in terms of sales?
+    sql: |-
+      WITH rep_sales AS (
+        SELECT
+          sales_rep_id,
+          MIN(date) AS start_date,
+          MAX(date) AS end_date,
+          ROUND(SUM(total_sale_amount), 2) AS total_sales
+        FROM
+          sales
+        GROUP BY
+          sales_rep_id
+      ),
+      ranked_reps AS (
+        SELECT
+          sales_rep_id,
+          start_date,
+          end_date,
+          total_sales,
+          ROW_NUMBER() OVER (
+            ORDER BY
+              total_sales ASC
+          ) AS worst_rank,
+          ROW_NUMBER() OVER (
+            ORDER BY
+              total_sales DESC NULLS LAST
+          ) AS best_rank
+        FROM
+          rep_sales
+      )
+      SELECT
+        sales_rep_id,
+        start_date,
+        end_date,
+        total_sales,
+        CASE
+          WHEN worst_rank = 1 THEN 'Worst Rep'
+          WHEN best_rank = 1 THEN 'Best Rep'
+        END AS rep_type
+      FROM
+        ranked_reps
+      WHERE
+        worst_rank = 1
+        OR best_rank = 1
+      ORDER BY
+        total_sales DESC NULLS LAST
+    use_as_onboarding_question: false
+    verified_by: Nishant Gerald
+    verified_at: 1760193050
+module_custom_instructions:
+  sql_generation: Ensure all floating point values are rounded to 2 decimal places in the final output
