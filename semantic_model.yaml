@@ -221,6 +221,90 @@ tables:
     primary_key:
       columns:
         - TRANSACTION_ID
+  - name: SUPPORT_CASES
+    description: This table stores information about customer complaints and issues related to sales transactions, including the type of issue, priority level, current status, and resolution details, allowing for tracking and analysis of support cases to improve customer satisfaction and sales transaction quality.
+    base_table:
+      database: RNDC_LAB
+      schema: TARGET
+      table: SUPPORT_CASES
+    dimensions:
+      - name: CASE_TYPE
+        description: 'Type of issue: Damaged Product, Delivery Issue, Wrong Product, Quality Complaint, Billing Issue, etc.'
+        expr: CASE_TYPE
+        data_type: VARCHAR(50)
+        sample_values:
+          - Delivery Issue
+          - Temperature Issue
+          - Damaged Product
+      - name: DESCRIPTION
+        description: Brief description of the customer issue
+        expr: DESCRIPTION
+        data_type: VARCHAR(500)
+        sample_values:
+          - Driver dropped pallet during unload. 5 bottles shattered, rest of order appears intact but checking for cracks.
+          - Delivery truck was not climate controlled. Heat damage visible on wine labels and corks.
+          - Completely wrong rum - ordered spiced, got coconut. Can't use this for our signature cocktails.
+      - name: PRIORITY
+        description: 'Priority level: Low, Medium, High, Critical'
+        expr: PRIORITY
+        data_type: VARCHAR(20)
+        sample_values:
+          - High
+          - Low
+          - Medium
+      - name: STATUS
+        description: 'Current status: Open, In Progress, Resolved, Closed'
+        expr: STATUS
+        data_type: VARCHAR(20)
+        sample_values:
+          - In Progress
+          - Resolved
+          - Closed
+      - name: SUPPORT_CASE_ID
+        description: Unique identifier for each support case
+        expr: SUPPORT_CASE_ID
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '878'
+          - '40518'
+          - '15059'
+      - name: TRANSACTION_ID
+        description: Foreign key reference to the sales transaction
+        expr: TRANSACTION_ID
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '12152'
+          - '34025'
+          - '908'
+    time_dimensions:
+      - name: CASE_DATE
+        description: Date when the support case was opened
+        expr: CASE_DATE
+        data_type: DATE
+        sample_values:
+          - '2024-12-23'
+          - '2025-08-27'
+          - '2025-06-02'
+    facts:
+      - name: CUSTOMER_SATISFACTION_SCORE
+        description: Customer satisfaction rating 1-5 after resolution (NULL if not yet resolved)
+        expr: CUSTOMER_SATISFACTION_SCORE
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '4'
+          - '5'
+          - '3'
+      - name: RESOLUTION_TIME_DAYS
+        description: Number of days taken to resolve the case (NULL if not yet resolved)
+        expr: RESOLUTION_TIME_DAYS
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '4'
+          - '43'
+          - '3'
+    primary_key:
+      columns:
+        - SUPPORT_CASE_ID
 relationships:
   - name: SALES_CUSTOMER_CUSTOMER_ID
     left_table: SALES
@@ -234,6 +318,12 @@ relationships:
     relationship_columns:
       - left_column: PRODUCT_SKU
         right_column: PRODUCT_SKU
+  - left_table: SUPPORT_CASES
+    relationship_columns:
+      - left_column: TRANSACTION_ID
+        right_column: TRANSACTION_ID
+    right_table: SALES
+    name: sales_support_cases_transaction_id
 verified_queries:
   - name: What is the average bottle price for Vodka products compared to Tequila products?
     question: What is the average bottle price for Vodka products compared to Tequila products?
@@ -341,5 +431,29 @@ verified_queries:
     use_as_onboarding_question: false
     verified_by: Nishant Gerald
     verified_at: 1760273176
+  - name: What are some of the most common issues we're seeing with vodka sales, in the last 6 months?
+    question: What are some of the most common issues we're seeing with vodka sales, in the last 6 months?
+    sql: |-
+      SELECT
+        sc.case_type,
+        COUNT(*) AS issue_count,
+        ROUND(
+          COUNT(*) * 100.0 / NULLIF(NULLIF(SUM(COUNT(*)) OVER (), 0), 0),
+          2
+        ) AS percentage_of_total
+      FROM
+        support_cases AS sc
+        LEFT OUTER JOIN sales AS s ON sc.transaction_id = s.transaction_id
+        LEFT OUTER JOIN product AS p ON s.product_sku = p.product_sku
+      WHERE
+        p.category = 'Vodka'
+        AND sc.case_date >= DATEADD(DAY, -180, CURRENT_DATE)
+      GROUP BY
+        sc.case_type
+      ORDER BY
+        issue_count DESC NULLS LAST
+    use_as_onboarding_question: false
+    verified_by: Nishant Gerald
+    verified_at: 1760275410
 module_custom_instructions:
   sql_generation: Ensure all floating point values are rounded to 2 decimal places in the final output
