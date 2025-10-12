@@ -253,19 +253,6 @@ verified_queries:
     use_as_onboarding_question: false
     verified_by: Nishant Gerald
     verified_at: 1760192764
-  - name: How many cases were sold by sales rep 5017 in 2025?
-    question: How many cases were sold by sales rep 5017 in 2025?
-    sql: |-
-      SELECT
-        SUM(case_quantity) AS total_cases_sold
-      FROM
-        sales
-      WHERE
-        sales_rep_id = 5017
-        AND DATE_PART('YEAR', date) = 2025
-    use_as_onboarding_question: false
-    verified_by: Nishant Gerald
-    verified_at: 1760192785
   - name: Can you compare my worst rep to the best rep, in terms of sales?
     question: Can you compare my worst rep to the best rep, in terms of sales?
     sql: |-
@@ -316,5 +303,43 @@ verified_queries:
     use_as_onboarding_question: false
     verified_by: Nishant Gerald
     verified_at: 1760193050
+  - name: How many cases were sold by the top sales rep in 2025, and what was their average deal size?
+    question: How many cases were sold by the top sales rep in 2025, and what was their average deal size?
+    sql: |-
+      WITH rep_sales_2025 AS (
+        SELECT
+          sales_rep_id,
+          SUM(case_quantity) AS total_cases,
+          SUM(total_sale_amount) AS total_sales,
+          COUNT(transaction_id) AS total_transactions
+        FROM
+          sales
+        WHERE
+          DATE_PART('YEAR', date) = 2025
+        GROUP BY
+          sales_rep_id
+      ),
+      top_rep AS (
+        SELECT
+          sales_rep_id,
+          total_cases,
+          total_sales,
+          total_transactions
+        FROM
+          rep_sales_2025
+        ORDER BY
+          total_sales DESC NULLS LAST
+        LIMIT
+          1
+      )
+      SELECT
+        sales_rep_id,
+        total_cases,
+        ROUND(total_sales / NULLIF(total_transactions, 0), 2) AS average_deal_size
+      FROM
+        top_rep
+    use_as_onboarding_question: false
+    verified_by: Nishant Gerald
+    verified_at: 1760273176
 module_custom_instructions:
   sql_generation: Ensure all floating point values are rounded to 2 decimal places in the final output
