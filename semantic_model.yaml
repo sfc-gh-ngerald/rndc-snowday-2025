@@ -244,6 +244,10 @@ tables:
           - Driver dropped pallet during unload. 5 bottles shattered, rest of order appears intact but checking for cracks.
           - Delivery truck was not climate controlled. Heat damage visible on wine labels and corks.
           - Completely wrong rum - ordered spiced, got coconut. Can't use this for our signature cocktails.
+        cortex_search_service:
+          database: RNDC_LAB
+          schema: PUBLIC
+          service: SUPPORT_CASE_DESCRIPTION_SEARCH
       - name: PRIORITY
         description: 'Priority level: Low, Medium, High, Critical'
         expr: PRIORITY
@@ -290,6 +294,7 @@ tables:
         description: Customer satisfaction rating 1-5 after resolution (NULL if not yet resolved)
         expr: CUSTOMER_SATISFACTION_SCORE
         data_type: NUMBER(38,0)
+        access_modifier: public_access
         sample_values:
           - '4'
           - '5'
@@ -298,6 +303,7 @@ tables:
         description: Number of days taken to resolve the case (NULL if not yet resolved)
         expr: RESOLUTION_TIME_DAYS
         data_type: NUMBER(38,0)
+        access_modifier: public_access
         sample_values:
           - '4'
           - '43'
@@ -318,12 +324,12 @@ relationships:
     relationship_columns:
       - left_column: PRODUCT_SKU
         right_column: PRODUCT_SKU
-  - left_table: SUPPORT_CASES
+  - name: SALES_SUPPORT_CASES_TRANSACTION_ID
+    left_table: SUPPORT_CASES
+    right_table: SALES
     relationship_columns:
       - left_column: TRANSACTION_ID
         right_column: TRANSACTION_ID
-    right_table: SALES
-    name: sales_support_cases_transaction_id
 verified_queries:
   - name: What is the average bottle price for Vodka products compared to Tequila products?
     question: What is the average bottle price for Vodka products compared to Tequila products?
