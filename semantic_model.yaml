@@ -444,7 +444,7 @@ verified_queries:
         sc.case_type,
         COUNT(*) AS issue_count,
         ROUND(
-          COUNT(*) * 100.0 / NULLIF(NULLIF(SUM(COUNT(*)) OVER (), 0), 0),
+          COUNT(*) * 100.0 / NULLIF(SUM(COUNT(*)) OVER (), 0),
           2
         ) AS percentage_of_total
       FROM
@@ -453,13 +453,13 @@ verified_queries:
         LEFT OUTER JOIN product AS p ON s.product_sku = p.product_sku
       WHERE
         p.category = 'Vodka'
-        AND sc.case_date >= DATEADD(DAY, -180, CURRENT_DATE)
+        AND sc.case_date >= DATEADD(MONTH, -6, CURRENT_DATE)
       GROUP BY
         sc.case_type
       ORDER BY
         issue_count DESC NULLS LAST
     use_as_onboarding_question: false
     verified_by: Nishant Gerald
-    verified_at: 1760275410
+    verified_at: 1760276369
 module_custom_instructions:
   sql_generation: Ensure all floating point values are rounded to 2 decimal places in the final output
