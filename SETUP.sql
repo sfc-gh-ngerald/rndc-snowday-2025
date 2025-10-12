@@ -1,14 +1,23 @@
 USE ROLE ACCOUNTADMIN;
+
+-- Creating a Small WH for use in the RNDC Snow Day Labs
+-- If needed, we can scale this up later
 CREATE OR REPLACE WAREHOUSE RNDC_LAB_WH WITH WAREHOUSE_SIZE='SMALL';
 USE WAREHOUSE RNDC_LAB_WH;
+
+-- Ensuring that cross region inference is turned on. 
+-- This is a requirements for Analyst
 ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'AWS_US';
 
+-- Setup dedicated Snowflake Intelligence db
 CREATE DATABASE IF NOT EXISTS snowflake_intelligence;
 GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE PUBLIC;
 
+-- Setup dedicated Agents schema to store agents
 CREATE SCHEMA IF NOT EXISTS snowflake_intelligence.agents;
 GRANT USAGE ON SCHEMA snowflake_intelligence.agents TO ROLE PUBLIC;
 
+-- Providing access to create new agents in the schema
 GRANT CREATE AGENT ON SCHEMA snowflake_intelligence.agents TO ROLE ACCOUNTADMIN;
 
 -- ================================================================
