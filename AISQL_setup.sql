@@ -12,6 +12,10 @@ USE ROLE ACCOUNTADMIN;
 USE DATABASE RNDC_LAB;
 USE SCHEMA RNDC_LAB.TARGET;
 
+CREATE OR REPLACE STAGE RNDC_LAB.TARGET.DOORDASH_IMAGES
+  ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE')
+  DIRECTORY = (ENABLE = TRUE);
+
 -- ================================================================
 -- 2. Create CSV File Format
 -- ================================================================
