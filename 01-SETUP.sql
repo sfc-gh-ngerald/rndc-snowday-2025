@@ -26,7 +26,7 @@ GRANT CREATE AGENT ON SCHEMA snowflake_intelligence.agents TO ROLE ACCOUNTADMIN;
 -- ================================================================
 
 -- Create database and schema
-CREATE DATABASE IF NOT EXISTS RNDC_LAB;
+CREATE OR REPLACE DATABASE RNDC_LAB;
 USE DATABASE RNDC_LAB;
 CREATE SCHEMA IF NOT EXISTS TARGET;
 USE SCHEMA TARGET;
